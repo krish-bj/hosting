@@ -1,0 +1,1470 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ABC MATH Academy — Users Management</title>
+
+  <!-- Bootstrap 5 (for utilities only) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+  <!-- Tailwind CDN for utility classes (optional) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Inter font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* -------------------------
+       Design Tokens (CSS vars)
+       ------------------------- */
+    :root{
+      --primary-600: #1E6FF8;
+      --primary-700: #0A5BD6;
+      --accent-blue: #0288d1;
+      --text-900: #0f1724;
+      --muted-600: #6b7280;
+      --surface-100: #ffffff;
+      --surface-200: #EAF6FF; /* light tint (kept for cards) */
+      --bg-100: #f6fbff;
+      --border-200: #E6EEF8;
+      --danger: #ef4444;
+      --success: #10b981;
+
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --radius: 12px;
+
+      --shadow-1: 0 6px 18px rgba(2,24,45,0.06);
+      --shadow-2: 0 10px 30px rgba(2,24,45,0.08);
+
+      --bp-sm: 768px;
+      --bp-md: 1200px;
+    }
+
+    /* -------------------------
+       Base / accessibility
+       ------------------------- */
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:var(--bg-100);
+      color:var(--text-900);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    a{ color: inherit; text-decoration: none; }
+    .muted{ color:var(--muted-600); }
+
+    /* Focus-visible (keyboard) */
+    :focus-visible {
+      outline: 3px solid rgba(30,111,248,0.18);
+      outline-offset: 2px;
+      border-radius: 8px;
+    }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      left: -999px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+    .skip-link:focus {
+      left: 16px;
+      top: 12px;
+      width: auto;
+      height: auto;
+      padding: 8px 12px;
+      background: #062b4f;
+      color: #fff;
+      border-radius: 6px;
+      z-index: 9999;
+    }
+
+    /* -------------------------
+       New Header Layout
+       ------------------------- */
+    .app-header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 80px;
+      background: var(--surface-100);
+      border-bottom: 1px solid var(--border-200);
+      z-index: 1050;
+    }
+    .header-inner {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding: 0 var(--space-6);
+    }
+    .header-left { display: flex; align-items: center; gap: var(--space-4); min-width:0; }
+    .logo-icon {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, #29b6f6, #0288d1);
+      border-radius: 10px;
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+    .greeting-wrap h1 { font-size: 22px; font-weight: 800; margin: 0; white-space: nowrap; overflow:hidden; text-overflow:ellipsis; max-width:320px; }
+    .greeting-sub { display: flex; align-items: center; gap: var(--space-3); font-size: 14px; }
+    .learn-link { background: none; border: none; padding: 0; color: var(--primary-600); font-weight: 700; cursor: pointer; }
+
+    .header-actions { display: flex; align-items: center; gap: var(--space-2); }
+    .search-box { position: relative; width: 320px; }
+    .search-input { width: 100%; height: 44px; padding-left: 40px; border-radius: 10px; border: 1px solid var(--border-200); background: #f8fafc; }
+    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted-600); }
+
+    .icon-btn {
+      width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center;
+      background: transparent; border: none; cursor: pointer;
+    }
+    .icon-btn:hover { background: rgba(0,0,0,0.04); }
+
+    .profile-area { position: relative; display: flex; align-items: center; }
+    .progress-container { width: 52px; height: 52px; position: absolute; left: -12px; top: 50%; transform: translateY(-50%); }
+    .profile-pill-wrap { position: relative; z-index: 1; }
+    .profile-pill {
+      display: flex; align-items: center; gap: var(--space-2);
+      background: var(--surface-100);
+      border: 1px solid var(--border-200);
+      border-radius: 30px;
+      padding: 6px 12px 6px 48px; /* Left padding kept for progress ring overlap */
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+    .profile-pill:hover { border-color: #bfdbfe; }
+    .profile-name { font-weight: 700; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .caret { transition: transform .2s; }
+    .profile-pill-wrap[aria-expanded="true"] .caret { transform: rotate(180deg); }
+    .profile-notif-dot { position: absolute; top: 6px; right: 8px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; border: 1.5px solid white; }
+
+    .profile-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 220px;
+      background: var(--surface-100);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-2);
+      border: 1px solid var(--border-200);
+      z-index: 1100;
+      padding: var(--space-2);
+    }
+    .profile-dropdown.show { display: block; }
+    .profile-dropdown .dropdown-item { padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+    .profile-dropdown .dropdown-item:hover { background: rgba(0,0,0,0.04); }
+    .profile-dropdown .logout { color: var(--danger); }
+
+    .app-wrapper {
+      padding-top: calc(80px + var(--space-6)); /* Adjust for header */
+      display:flex;
+      gap:20px;
+      justify-content:center;
+      padding-left:16px;
+      padding-right:16px;
+    }
+    .container-main{ max-width:1400px; width:100%; display:flex; gap:20px; align-items:flex-start; }
+
+    /* -------------------------
+       Sidebar
+       ------------------------- */
+    .sidebar{
+      width:260px; background:var(--surface-100); border-radius:12px;
+      padding:16px; box-shadow: var(--shadow-1);
+      height: calc(100vh - 80px - (2 * var(--space-6))); /* Adjust for header */
+      position: sticky;
+      top: calc(80px + var(--space-6)); /* Adjust for header */
+      overflow: hidden;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .sidebar .menu { flex:1; overflow:auto; padding-right:4px; }
+    .sidebar .menu::-webkit-scrollbar{ width:8px; }
+    .sidebar .menu::-webkit-scrollbar-thumb{ background: rgba(2,24,45,0.06); border-radius:8px; }
+
+    .help-bottom { margin-top: 12px; }
+
+    .menu-item {
+      display:flex; gap:12px; align-items:center; padding:10px; border-radius:10px; color:var(--muted-600); font-weight:700; cursor:pointer;
+      user-select:none;
+    }
+    .menu-item:hover { background: rgba(2,136,209,0.04); color:var(--primary-600); }
+    .menu-item.active { background: linear-gradient(90deg, rgba(14,165,233,0.06), transparent); color:var(--primary-600); box-shadow: inset 3px 0 0 var(--primary-600); }
+    .submenu { padding-left:36px; display:none; flex-direction:column; gap:8px; margin-top:6px; }
+    .submenu a { padding:8px 10px; border-radius:8px; color:var(--muted-600); font-weight:700; }
+
+    /* -------------------------
+       Content area & cards
+       ------------------------- */
+    .content{ flex:1; min-width:0; }
+
+    /* People/Users Specific Styles */
+    .users-container {
+      background: var(--surface-100);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: var(--shadow-1);
+    }
+
+    .users-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      gap: 16px;
+    }
+
+    .users-title-section {
+      flex: 1;
+    }
+
+    .users-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-900);
+      margin: 0 0 8px 0;
+    }
+
+    .users-count {
+      display: inline-block;
+      background: var(--primary-600);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .users-subtitle {
+      color: var(--muted-600);
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .users-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    /* Search and Filter Section */
+    .search-filter-section {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-users {
+      position: relative;
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .search-users-input {
+      width: 100%;
+      height: 44px;
+      padding-left: 40px;
+      border-radius: 10px;
+      border: 1px solid var(--border-200);
+      background: #f8fafc;
+    }
+
+    .search-users-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted-600);
+    }
+
+    .filter-btn {
+      background: transparent;
+      border: 1px solid var(--border-200);
+      border-radius: 10px;
+      padding: 10px 16px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-900);
+    }
+
+    .filter-btn:hover {
+      background: #f8fafc;
+    }
+
+    /* Users Layout */
+    .users-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .users-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* User List Section */
+    .user-list-section {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-900);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-200);
+    }
+
+    .user-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .user-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      position: relative;
+    }
+
+    .user-item:hover {
+      background: white;
+      box-shadow: var(--shadow-1);
+    }
+
+    .user-item.active {
+      background: white;
+      border-color: var(--primary-600);
+      box-shadow: var(--shadow-1);
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .user-avatar.a { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .user-avatar.p { background: linear-gradient(135deg, #10b981, #047857); }
+    .user-avatar.r { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .user-avatar.u { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+
+    .user-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: var(--text-900);
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-phone {
+      font-size: 14px;
+      color: var(--muted-600);
+    }
+
+    .user-options {
+      position: relative;
+    }
+
+    .options-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--muted-600);
+      transition: all 0.2s;
+    }
+
+    .options-btn:hover {
+      background: rgba(0,0,0,0.04);
+      color: var(--text-900);
+    }
+
+    .options-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      width: 220px;
+      background: var(--surface-100);
+      border-radius: 8px;
+      box-shadow: var(--shadow-2);
+      border: 1px solid var(--border-200);
+      z-index: 100;
+      padding: 8px;
+    }
+
+    .options-menu.show {
+      display: block;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+      color: var(--text-900);
+    }
+
+    .option-item:hover {
+      background: rgba(2,136,209,0.04);
+    }
+
+    .option-item.delete {
+      color: var(--danger);
+    }
+
+    .option-item.delete:hover {
+      background: rgba(239,68,68,0.04);
+    }
+
+    .option-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted-600);
+    }
+
+    .option-item:hover .option-icon {
+      color: var(--primary-600);
+    }
+
+    .option-item.delete:hover .option-icon {
+      color: var(--danger);
+    }
+
+    /* Registration Dates */
+    .registration-dates {
+      margin-top: 24px;
+    }
+
+    .date-item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-200);
+      font-weight: 600;
+      color: var(--text-900);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .date-item:last-child {
+      border-bottom: none;
+    }
+
+    .date-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .date-action-btn {
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border-200);
+      background: transparent;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--muted-600);
+    }
+
+    .date-action-btn:hover {
+      background: var(--primary-600);
+      color: white;
+      border-color: var(--primary-600);
+    }
+
+    /* Buttons */
+    .btn {
+      border-radius: 10px;
+      padding: 10px 14px;
+      min-height:44px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      font-weight:700;
+      cursor:pointer;
+      border: 0;
+    }
+    .btn-primary { background: var(--primary-600); color: white; }
+    .btn-primary:hover { background: var(--primary-700); }
+    .btn-outline { background: transparent; color: var(--primary-600); border: 2px solid var(--primary-600); }
+    .btn-ghost { background: transparent; color: var(--text-900); border: 1px solid var(--border-200); }
+
+    /* responsive sidebar collapse helper (kept simple) */
+    @media (max-width: 992px) {
+      .search-box, .greeting-wrap { display: none; }
+    }
+    @media (max-width: 768px) {
+      .sidebar { display:none; position:fixed; left:0; top:80px; z-index:1200; height:calc(100vh - 80px); }
+      .profile-name { display: none; }
+      .profile-pill { padding-left: 40px; }
+      .progress-container { left: -8px; }
+      #hamburger { display: grid; }
+      .header-inner { padding-left:12px; padding-right:12px; }
+      .app-wrapper { padding-left:8px; padding-right:8px; }
+      .greeting-wrap h1 { max-width: 160px; font-size:18px; }
+      .users-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .search-users {
+        min-width: 100%;
+      }
+      .users-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .options-menu {
+        right: -100px;
+        width: 200px;
+      }
+    }
+    @media (min-width: 769px) {
+      #hamburger { display: none; }
+    }
+
+    /* minor accessibility focus for menu items */
+    .menu-item:focus { outline: none; box-shadow: 0 0 0 3px rgba(30,111,248,0.12); }
+  </style>
+</head>
+<body>
+  <a href="#maincontent" class="skip-link">Skip to main content</a>
+
+  <!-- HEADER -->
+  <header class="app-header" role="banner" aria-label="Main header">
+    <div class="header-inner">
+      <div class="header-left" style="min-width:0">
+        <!-- Hamburger for mobile -->
+        <button id="hamburger" class="icon-btn" aria-label="Open navigation menu" aria-expanded="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="logo-icon" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3L12 17" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6 11L12 17L18 11" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <div class="greeting-wrap" role="region" aria-label="Greeting">
+          <h1 id="mainGreeting">Hi ABC MATH ACADEMY,</h1>
+          <div class="greeting-sub">
+            <span class="muted">Welcome to your Dashboard</span>
+            <!-- Learn button removed as requested -->
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions" role="navigation" aria-label="Header actions">
+        <div class="search-box" role="search" aria-label="Global search">
+          <span class="search-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35" stroke="#0288d1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <input id="desktopSearch" class="search-input" type="search" placeholder="Search students, courses, assignments..." aria-label="Search" autocomplete="off" />
+        </div>
+
+        <button id="fullscreenBtn" class="icon-btn" aria-label="Toggle fullscreen" title="Toggle fullscreen">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 9V3h6" stroke="#0B2545" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 15v6h-6" stroke="#0B2545" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 9V3h-6" stroke="#0B2545" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 15v6h6" stroke="#0B2545" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <button id="alertsBtn" class="icon-btn" aria-label="Alerts" aria-haspopup="true" aria-expanded="false" title="Alerts">
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2z" fill="#0288d1"/>
+            <path d="M18 16v-5a6 6 0 1 0-12 0v5l-2 2v1h16v-1l-2-2z" fill="#fff"/>
+            <path d="M18 16v-5a6 6 0 1 0-12 0v5" stroke="#0288d1" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <div class="profile-area">
+          <div class="progress-container" aria-hidden="true" title="Dashboard completion">
+            <svg viewBox="0 0 36 36" aria-hidden="true">
+              <path d="M18 2.0845a15.9155 15.9155 0 1 1 0 31.831" stroke="#e6f0fa" stroke-width="4" fill="none"></path>
+              <path id="progressArc" d="M18 2.0845a15.9155 15.9155 0 1 1 0 31.831" stroke="#0288d1" stroke-width="4" stroke-linecap="round" fill="none" stroke-dasharray="46 100"></path>
+            </svg>
+          </div>
+
+          <div class="profile-pill-wrap" id="profileWrap" aria-haspopup="true" aria-expanded="false">
+            <button id="profilePill" class="profile-pill" aria-label="Account menu" aria-controls="profileDropdown" aria-expanded="false">
+              <!-- AMA badge removed as requested -->
+              <div class="profile-name" id="profileLabel" title="ABC MATH ACADEMY">ABC MATH ACADEMY</div>
+              <svg class="caret" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" stroke="#6b7280" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            </button>
+            <span id="profileNotifDot" class="profile-notif-dot" aria-hidden="true" style="display:block"></span>
+          </div>
+
+          <div id="profileDropdown" class="profile-dropdown" role="menu" aria-hidden="true" aria-label="Profile menu">
+            <div tabindex="0" class="dropdown-item" id="mi-myprofile" role="menuitem">My Profile</div>
+            <div tabindex="0" class="dropdown-item" id="mi-recharge" role="menuitem">Recharge</div>
+            <div tabindex="0" class="dropdown-item" id="mi-settings" role="menuitem">Settings</div>
+            <div tabindex="0" class="dropdown-item" id="mi-help" role="menuitem">Help and Support</div>
+            <div style="height:1px;background:var(--border-200);margin:8px 0;"></div>
+            <div tabindex="0" class="dropdown-item logout" id="mi-logout" role="menuitem">Logout</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN / CONTENT -->
+  <main id="maincontent" class="app-wrapper" role="main" aria-label="Users Management">
+    <div class="container-main">
+
+      <!-- Sidebar -->
+      <aside id="sidebar" class="sidebar" aria-label="Main navigation">
+        <nav aria-label="Sidebar menu" style="display:flex;flex-direction:column;height:100%;">
+          <div class="menu" role="menu" aria-label="Primary">
+            <div class="mb-3" style="padding:6px 0 12px 0;">
+              <!-- top space kept for visual balance (Help button moved to bottom) -->
+            </div>
+
+            <div class="menu-item" data-key="dashboard" tabindex="0" role="menuitem">
+              <svg width="18" height="18" viewBox="0 0 24 24" style="flex-shrink:0"><path d="M3 13h8V3H3v10zM13 21h8V11h-8v10zM13 3v6h8V3h-8zM3 21h8v-8H3v8z" fill="#06a6db"/></svg>
+              <span>Dashboard</span>
+            </div>
+
+            <div class="menu-item has-sub" data-key="courses" tabindex="0" role="button" aria-expanded="false">
+              <svg width="18" height="18" viewBox="0 0 24 24" style="flex-shrink:0"><path d="M4 6h16v2H4zM4 10h10v2H4zM4 14h16v2H4z" fill="#8fbde0"/></svg>
+              <span>Courses</span>
+            </div>
+            <div class="submenu" data-parent="courses" aria-hidden="true">
+              <a href="course.html" class="d-block">My Courses</a>
+              <a href="#" class="d-block">Global Courses</a>
+              <a href="#" class="d-block">Manage Coupons</a>
+            </div>
+
+            <div class="menu-item has-sub" data-key="batches" tabindex="0" role="button" aria-expanded="false">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M3 7h18v13H3zM7 2h10v3H7z" fill="#a0d6ff"/></svg>
+              <span>Batches</span>
+            </div>
+            <div class="submenu" data-parent="batches" aria-hidden="true">
+              <a href="#" class="d-block">Manage Batch</a>
+              <a href="manage-fees.html" class="d-block">Manage Fees</a>
+            </div>
+
+            <div class="menu-item has-sub" data-key="content" tabindex="0" role="button" aria-expanded="false">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M4 4h16v16H4z" fill="#cfeefd"/></svg>
+              <span>Content</span>
+            </div>
+            <div class="submenu" data-parent="content" aria-hidden="true">
+              <a href="test-portal.html" class="d-block">Test Portal</a>
+              <a href="free-material.html" class="d-block">Free Material</a>
+            </div>
+
+            <div class="menu-item" data-key="chat" tabindex="0">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M2 12h20v6H7l-5 5V12z" fill="#bfe7ff"/></svg>
+              <span>Chat</span>
+            </div>
+
+            <div class="menu-item" data-key="analytics" tabindex="0">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M4 21h4V10H4v11zM10 21h4V3h-4v18zM16 21h4v-8h-4v8z" fill="#9dd2f7"/></svg>
+              <span>Analytics</span>
+            </div>
+
+            <div class="menu-item active" data-key="people" tabindex="0" role="menuitem" aria-current="page">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zM4 20a8 8 0 0116 0H4z" fill="#caeefe"/></svg>
+              <span>People</span>
+            </div>
+          </div>
+
+          <!-- Help & Support moved to bottom of sidebar -->
+          <div style="padding-top:12px;">
+            <button id="helpBtn" class="btn btn-primary w-100 help-bottom" style="border-radius:10px; font-weight:700;">Help & Support</button>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- Main content area (users management) -->
+      <section class="content" aria-label="Users Management">
+        <div class="users-container">
+          <div class="users-header">
+            <div class="users-title-section">
+              <h1 class="users-title">
+                Users <span class="users-count">722</span>
+              </h1>
+              <p class="users-subtitle">
+                View, Filter & Manage all your users on site/app. 
+                <a href="#" class="learn-link">Learn how →</a>
+              </p>
+            </div>
+            <div class="users-actions">
+              <button class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add User
+              </button>
+              <button class="btn btn-ghost">
+                <i class="fas fa-download"></i> Export
+              </button>
+            </div>
+          </div>
+
+          <!-- Search and Filter Section -->
+          <div class="search-filter-section">
+            <div class="search-users">
+              <span class="search-users-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35" stroke="#0288d1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <input class="search-users-input" type="text" placeholder="Search by Name / Mobile Number" aria-label="Search users">
+            </div>
+            <button class="filter-btn">
+              <i class="fas fa-filter"></i> Filter
+            </button>
+          </div>
+
+          <!-- Divider -->
+          <hr style="margin: 0 0 24px 0; border: none; border-top: 1px solid var(--border-200);">
+
+          <!-- Users Layout -->
+          <div class="users-layout">
+            <!-- User List Section -->
+            <div class="user-list-section">
+              <h3 class="section-title">User Info</h3>
+              <div class="user-list">
+                <!-- User 1 -->
+                <div class="user-item active" data-user="balaji">
+                  <div class="user-avatar a">A</div>
+                  <div class="user-info">
+                    <div class="user-name">AP25027 BALAJI Kumbakonam</div>
+                    <div class="user-phone">917010845544</div>
+                  </div>
+                  <div class="user-options">
+                    <button class="options-btn">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="options-menu">
+                      <div class="option-item" data-action="link-parent">
+                        <div class="option-icon">
+                          <i class="fas fa-link"></i>
+                        </div>
+                        <span>Link Parent</span>
+                      </div>
+                      <div class="option-item" data-action="logged-devices">
+                        <div class="option-icon">
+                          <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <span>See logged devices</span>
+                      </div>
+                      <div class="option-item" data-action="give-certificate">
+                        <div class="option-icon">
+                          <i class="fas fa-certificate"></i>
+                        </div>
+                        <span>Give Certificate</span>
+                      </div>
+                      <div class="option-item" data-action="revoke-access">
+                        <div class="option-icon">
+                          <i class="fas fa-ban"></i>
+                        </div>
+                        <span>Revoke Access</span>
+                      </div>
+                      <div class="option-item" data-action="toggle-active">
+                        <div class="option-icon">
+                          <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <span>Make Inactive/Active in Course</span>
+                      </div>
+                      <div class="option-item delete" data-action="delete">
+                        <div class="option-icon">
+                          <i class="fas fa-trash"></i>
+                        </div>
+                        <span>Delete</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- User 2 -->
+                <div class="user-item" data-user="playstore">
+                  <div class="user-avatar p">P</div>
+                  <div class="user-info">
+                    <div class="user-name">Playstore</div>
+                    <div class="user-phone">919154518337</div>
+                  </div>
+                  <div class="user-options">
+                    <button class="options-btn">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="options-menu">
+                      <div class="option-item" data-action="link-parent">
+                        <div class="option-icon">
+                          <i class="fas fa-link"></i>
+                        </div>
+                        <span>Link Parent</span>
+                      </div>
+                      <div class="option-item" data-action="logged-devices">
+                        <div class="option-icon">
+                          <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <span>See logged devices</span>
+                      </div>
+                      <div class="option-item" data-action="give-certificate">
+                        <div class="option-icon">
+                          <i class="fas fa-certificate"></i>
+                        </div>
+                        <span>Give Certificate</span>
+                      </div>
+                      <div class="option-item" data-action="revoke-access">
+                        <div class="option-icon">
+                          <i class="fas fa-ban"></i>
+                        </div>
+                        <span>Revoke Access</span>
+                      </div>
+                      <div class="option-item" data-action="toggle-active">
+                        <div class="option-icon">
+                          <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <span>Make Inactive/Active in Course</span>
+                      </div>
+                      <div class="option-item delete" data-action="delete">
+                        <div class="option-icon">
+                          <i class="fas fa-trash"></i>
+                        </div>
+                        <span>Delete</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- User 3 -->
+                <div class="user-item" data-user="mahalakshmi">
+                  <div class="user-avatar r">R</div>
+                  <div class="user-info">
+                    <div class="user-name">R.Mahalakshmi</div>
+                    <div class="user-phone">919698737305</div>
+                  </div>
+                  <div class="user-options">
+                    <button class="options-btn">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="options-menu">
+                      <div class="option-item" data-action="link-parent">
+                        <div class="option-icon">
+                          <i class="fas fa-link"></i>
+                        </div>
+                        <span>Link Parent</span>
+                      </div>
+                      <div class="option-item" data-action="logged-devices">
+                        <div class="option-icon">
+                          <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <span>See logged devices</span>
+                      </div>
+                      <div class="option-item" data-action="give-certificate">
+                        <div class="option-icon">
+                          <i class="fas fa-certificate"></i>
+                        </div>
+                        <span>Give Certificate</span>
+                      </div>
+                      <div class="option-item" data-action="revoke-access">
+                        <div class="option-icon">
+                          <i class="fas fa-ban"></i>
+                        </div>
+                        <span>Revoke Access</span>
+                      </div>
+                      <div class="option-item" data-action="toggle-active">
+                        <div class="option-icon">
+                          <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <span>Make Inactive/Active in Course</span>
+                      </div>
+                      <div class="option-item delete" data-action="delete">
+                        <div class="option-icon">
+                          <i class="fas fa-trash"></i>
+                        </div>
+                        <span>Delete</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- User 4 -->
+                <div class="user-item" data-user="ap25026">
+                  <div class="user-avatar a">A</div>
+                  <div class="user-info">
+                    <div class="user-name">AP25026 Dr.R.Mahalakshmi Chidambaram</div>
+                    <div class="user-phone">919080657848</div>
+                  </div>
+                  <div class="user-options">
+                    <button class="options-btn">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="options-menu">
+                      <div class="option-item" data-action="link-parent">
+                        <div class="option-icon">
+                          <i class="fas fa-link"></i>
+                        </div>
+                        <span>Link Parent</span>
+                      </div>
+                      <div class="option-item" data-action="logged-devices">
+                        <div class="option-icon">
+                          <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <span>See logged devices</span>
+                      </div>
+                      <div class="option-item" data-action="give-certificate">
+                        <div class="option-icon">
+                          <i class="fas fa-certificate"></i>
+                        </div>
+                        <span>Give Certificate</span>
+                      </div>
+                      <div class="option-item" data-action="revoke-access">
+                        <div class="option-icon">
+                          <i class="fas fa-ban"></i>
+                        </div>
+                        <span>Revoke Access</span>
+                      </div>
+                      <div class="option-item" data-action="toggle-active">
+                        <div class="option-icon">
+                          <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <span>Make Inactive/Active in Course</span>
+                      </div>
+                      <div class="option-item delete" data-action="delete">
+                        <div class="option-icon">
+                          <i class="fas fa-trash"></i>
+                        </div>
+                        <span>Delete</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- User 5 -->
+                <div class="user-item" data-user="sakthivel">
+                  <div class="user-avatar u">U</div>
+                  <div class="user-info">
+                    <div class="user-name">UG25029 Sakthivel Sekkodi</div>
+                    <div class="user-phone">919894954177</div>
+                  </div>
+                  <div class="user-options">
+                    <button class="options-btn">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="options-menu">
+                      <div class="option-item" data-action="link-parent">
+                        <div class="option-icon">
+                          <i class="fas fa-link"></i>
+                        </div>
+                        <span>Link Parent</span>
+                      </div>
+                      <div class="option-item" data-action="logged-devices">
+                        <div class="option-icon">
+                          <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <span>See logged devices</span>
+                      </div>
+                      <div class="option-item" data-action="give-certificate">
+                        <div class="option-icon">
+                          <i class="fas fa-certificate"></i>
+                        </div>
+                        <span>Give Certificate</span>
+                      </div>
+                      <div class="option-item" data-action="revoke-access">
+                        <div class="option-icon">
+                          <i class="fas fa-ban"></i>
+                        </div>
+                        <span>Revoke Access</span>
+                      </div>
+                      <div class="option-item" data-action="toggle-active">
+                        <div class="option-icon">
+                          <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <span>Make Inactive/Active in Course</span>
+                      </div>
+                      <div class="option-item delete" data-action="delete">
+                        <div class="option-icon">
+                          <i class="fas fa-trash"></i>
+                        </div>
+                        <span>Delete</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- User 6 -->
+                <div class="user-item" data-user="banupriya">
+                  <div class="user-avatar u">U</div>
+                  <div class="user-info">
+                    <div class="user-name">UG25028 Banupriya Chengalgattu</div>
+                    <div class="user-phone">919962090586</div>
+                  </div>
+                  <div class="user-options">
+                    <button class="options-btn">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="options-menu">
+                      <div class="option-item" data-action="link-parent">
+                        <div class="option-icon">
+                          <i class="fas fa-link"></i>
+                        </div>
+                        <span>Link Parent</span>
+                      </div>
+                      <div class="option-item" data-action="logged-devices">
+                        <div class="option-icon">
+                          <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <span>See logged devices</span>
+                      </div>
+                      <div class="option-item" data-action="give-certificate">
+                        <div class="option-icon">
+                          <i class="fas fa-certificate"></i>
+                        </div>
+                        <span>Give Certificate</span>
+                      </div>
+                      <div class="option-item" data-action="revoke-access">
+                        <div class="option-icon">
+                          <i class="fas fa-ban"></i>
+                        </div>
+                        <span>Revoke Access</span>
+                      </div>
+                      <div class="option-item" data-action="toggle-active">
+                        <div class="option-icon">
+                          <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <span>Make Inactive/Active in Course</span>
+                      </div>
+                      <div class="option-item delete" data-action="delete">
+                        <div class="option-icon">
+                          <i class="fas fa-trash"></i>
+                        </div>
+                        <span>Delete</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- User 7 -->
+                <div class="user-item" data-user="subha">
+                  <div class="user-avatar u">U</div>
+                  <div class="user-info">
+                    <div class="user-name">UG25021 Subha Dharmapuri</div>
+                    <div class="user-phone">-</div>
+                  </div>
+                  <div class="user-options">
+                    <button class="options-btn">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="options-menu">
+                      <div class="option-item" data-action="link-parent">
+                        <div class="option-icon">
+                          <i class="fas fa-link"></i>
+                        </div>
+                        <span>Link Parent</span>
+                      </div>
+                      <div class="option-item" data-action="logged-devices">
+                        <div class="option-icon">
+                          <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <span>See logged devices</span>
+                      </div>
+                      <div class="option-item" data-action="give-certificate">
+                        <div class="option-icon">
+                          <i class="fas fa-certificate"></i>
+                        </div>
+                        <span>Give Certificate</span>
+                      </div>
+                      <div class="option-item" data-action="revoke-access">
+                        <div class="option-icon">
+                          <i class="fas fa-ban"></i>
+                        </div>
+                        <span>Revoke Access</span>
+                      </div>
+                      <div class="option-item" data-action="toggle-active">
+                        <div class="option-icon">
+                          <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <span>Make Inactive/Active in Course</span>
+                      </div>
+                      <div class="option-item delete" data-action="delete">
+                        <div class="option-icon">
+                          <i class="fas fa-trash"></i>
+                        </div>
+                        <span>Delete</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Registration Dates Section -->
+            <div class="user-details-section">
+              <h3 class="section-title">Registration Date</h3>
+              
+              <div class="registration-dates">
+                <div class="date-item">
+                  20 Nov'25
+                  <div class="date-actions">
+                    <button class="date-action-btn">View</button>
+                    <button class="date-action-btn">Edit</button>
+                  </div>
+                </div>
+                <div class="date-item">
+                  1 Nov'25
+                  <div class="date-actions">
+                    <button class="date-action-btn">View</button>
+                    <button class="date-action-btn">Edit</button>
+                  </div>
+                </div>
+                <div class="date-item">
+                  27 Oct'25
+                  <div class="date-actions">
+                    <button class="date-action-btn">View</button>
+                    <button class="date-action-btn">Edit</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Minimal JS: sidebar toggles, manage-card actions, accessibility helpers -->
+  <script>
+    // Simple toast helper
+    function showToast(msg, type = 'info') {
+      const el = document.createElement('div');
+      el.textContent = msg;
+      const bgColor = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#04293a';
+      Object.assign(el.style, {
+        position:'fixed', right:'18px', bottom:'18px', background: bgColor, color:'white', padding:'10px 14px',
+        borderRadius:'8px', zIndex:9999, boxShadow:'0 8px 30px rgba(2,24,45,0.2)'
+      });
+      document.body.appendChild(el);
+      setTimeout(()=> el.style.opacity = '0.02', 1600);
+      setTimeout(()=> el.remove(), 2000);
+    }
+
+    // Users Management Functionality
+    class UsersManager {
+      constructor() {
+        this.selectedUser = null;
+        this.initializeEventListeners();
+      }
+
+      initializeEventListeners() {
+        // User selection
+        document.querySelectorAll('.user-item').forEach(item => {
+          item.addEventListener('click', (e) => {
+            // Don't trigger selection when clicking options button
+            if (!e.target.closest('.options-btn') && !e.target.closest('.options-menu')) {
+              this.selectUser(item);
+            }
+          });
+        });
+
+        // Options button click
+        document.querySelectorAll('.options-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleOptionsMenu(btn);
+          });
+        });
+
+        // Option item click
+        document.querySelectorAll('.option-item').forEach(item => {
+          item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const action = item.getAttribute('data-action');
+            const userItem = item.closest('.user-item');
+            this.handleUserAction(userItem, action);
+            this.closeAllOptionsMenus();
+          });
+        });
+
+        // Search functionality
+        const searchInput = document.querySelector('.search-users-input');
+        searchInput.addEventListener('input', (e) => {
+          this.filterUsers(e.target.value);
+        });
+
+        // Close options menus when clicking outside
+        document.addEventListener('click', () => {
+          this.closeAllOptionsMenus();
+        });
+
+        // Date action buttons
+        document.querySelectorAll('.date-action-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const dateItem = btn.closest('.date-item');
+            const date = dateItem.textContent.trim().split('\n')[0];
+            const action = btn.textContent.trim().toLowerCase();
+            this.handleDateAction(date, action);
+          });
+        });
+      }
+
+      selectUser(userItem) {
+        // Remove active class from all users
+        document.querySelectorAll('.user-item').forEach(item => {
+          item.classList.remove('active');
+        });
+
+        // Add active class to selected user
+        userItem.classList.add('active');
+        
+        this.selectedUser = userItem.getAttribute('data-user');
+        const userName = userItem.querySelector('.user-name').textContent;
+        
+        showToast(`Selected user: ${userName}`, 'success');
+      }
+
+      toggleOptionsMenu(btn) {
+        // Close all other menus first
+        this.closeAllOptionsMenus();
+        
+        const menu = btn.nextElementSibling;
+        menu.classList.toggle('show');
+      }
+
+      closeAllOptionsMenus() {
+        document.querySelectorAll('.options-menu').forEach(menu => {
+          menu.classList.remove('show');
+        });
+      }
+
+      handleUserAction(userItem, action) {
+        const userName = userItem.querySelector('.user-name').textContent;
+        const userId = userItem.getAttribute('data-user');
+
+        const actions = {
+          'link-parent': `Linking parent for ${userName}`,
+          'logged-devices': `Showing logged devices for ${userName}`,
+          'give-certificate': `Issuing certificate for ${userName}`,
+          'revoke-access': `Revoking access for ${userName}`,
+          'toggle-active': `Toggling active status for ${userName}`,
+          'delete': `Deleting user ${userName}`
+        };
+
+        if (action === 'delete') {
+          if (confirm(`Are you sure you want to delete ${userName}? This action cannot be undone.`)) {
+            showToast(actions[action], 'success');
+            // In a real app, you would remove the user from the list here
+          }
+        } else {
+          showToast(actions[action], 'success');
+        }
+      }
+
+      handleDateAction(date, action) {
+        showToast(`${action.charAt(0).toUpperCase() + action.slice(1)} registration date: ${date}`, 'success');
+      }
+
+      filterUsers(searchTerm) {
+        const users = document.querySelectorAll('.user-item');
+        const term = searchTerm.toLowerCase();
+
+        users.forEach(user => {
+          const name = user.querySelector('.user-name').textContent.toLowerCase();
+          const phone = user.querySelector('.user-phone').textContent.toLowerCase();
+          
+          if (name.includes(term) || phone.includes(term)) {
+            user.style.display = 'flex';
+          } else {
+            user.style.display = 'none';
+          }
+        });
+      }
+    }
+
+    // --- App Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize users manager
+      window.usersManager = new UsersManager();
+
+      // --- Element Cache ---
+      const hamburger = document.getElementById('hamburger');
+      const sidebar = document.getElementById('sidebar');
+      const alertsBtn = document.getElementById('alertsBtn');
+      const profileWrap = document.getElementById('profileWrap');
+      const profileDropdown = document.getElementById('profileDropdown');
+      const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+      // --- State ---
+      let sidebarOpen = false;
+
+      // --- Event Handlers ---
+
+      // Mobile sidebar toggle
+      const toggleMobileSidebar = () => {
+        sidebarOpen = !sidebarOpen;
+        sidebar.style.display = sidebarOpen ? 'block' : 'none';
+        hamburger.setAttribute('aria-expanded', sidebarOpen.toString());
+      };
+
+      // Profile Dropdown Toggle
+      const toggleProfileDropdown = (event) => {
+        event.stopPropagation();
+        const isExpanded = profileWrap.getAttribute('aria-expanded') === 'true';
+        profileWrap.setAttribute('aria-expanded', (!isExpanded).toString());
+        profileDropdown.classList.toggle('show');
+        profileDropdown.setAttribute('aria-hidden', (isExpanded ? 'true' : 'false'));
+      };
+
+      // Fullscreen Toggle
+      const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(err => showToast(`Fullscreen Error: ${err.message}`));
+        } else {
+          document.exitFullscreen();
+        }
+      };
+      
+      // Global click to close dropdowns
+      const handleGlobalClick = (event) => {
+        if (!profileWrap.contains(event.target)) {
+          profileWrap.setAttribute('aria-expanded', 'false');
+          profileDropdown.classList.remove('show');
+          profileDropdown.setAttribute('aria-hidden', 'true');
+        }
+      };
+
+      // --- Event Listeners ---
+      hamburger?.addEventListener('click', toggleMobileSidebar);
+      profileWrap?.addEventListener('click', toggleProfileDropdown);
+      fullscreenBtn?.addEventListener('click', toggleFullscreen);
+      window.addEventListener('click', handleGlobalClick);
+      
+      // Placeholder for alerts
+      alertsBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showToast('Alerts panel not implemented yet.');
+      });
+
+      // Sidebar submenu toggles (accessible)
+      document.querySelectorAll('.menu-item.has-sub').forEach(btn => {
+        const clickOrKeyHandler = (e) => {
+          const key = btn.getAttribute('data-key');
+          const submenu = document.querySelector(`.submenu[data-parent="${key}"]`);
+          if (!submenu) return;
+          const isOpen = submenu.getAttribute('aria-hidden') === 'false';
+          
+          // Close all other submenus
+          document.querySelectorAll('.submenu').forEach(s => { s.setAttribute('aria-hidden','true'); s.style.display = 'none'; });
+          document.querySelectorAll('.menu-item.has-sub').forEach(mi => mi.setAttribute('aria-expanded','false'));
+          
+          if (!isOpen) {
+            submenu.setAttribute('aria-hidden','false');
+            submenu.style.display = 'flex';
+            btn.setAttribute('aria-expanded','true');
+          } else {
+            submenu.setAttribute('aria-hidden','true');
+            submenu.style.display = 'none';
+            btn.setAttribute('aria-expanded','false');
+          }
+        };
+        btn.addEventListener('click', clickOrKeyHandler);
+        btn.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            clickOrKeyHandler(e);
+          }
+        });
+      });
+
+      // Sidebar active selection for non-parent items
+      document.querySelectorAll('.menu-item:not(.has-sub)').forEach(item => {
+        item.addEventListener('click', (e) => {
+          document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          // Close any open submenus
+          document.querySelectorAll('.submenu').forEach(s => { s.setAttribute('aria-hidden','true'); s.style.display = 'none'; });
+          document.querySelectorAll('.menu-item.has-sub').forEach(mi => mi.setAttribute('aria-expanded','false'));
+        });
+      });
+
+      // Add User button
+      document.querySelector('.btn-primary')?.addEventListener('click', (e) => {
+        showToast('Add User functionality not implemented yet');
+      });
+
+      // Export button
+      document.querySelector('.btn-ghost')?.addEventListener('click', (e) => {
+        showToast('Export functionality not implemented yet');
+      });
+
+      // Filter button
+      document.querySelector('.filter-btn')?.addEventListener('click', (e) => {
+        showToast('Filter functionality not implemented yet');
+      });
+
+      // Help button at bottom
+      const helpBtn = document.getElementById('helpBtn');
+      helpBtn?.addEventListener('click', (e) => {
+        showToast('Help & Support panel is not yet implemented.');
+      });
+
+      // --- Initial State Setup ---
+      const activeItem = document.querySelector('.menu-item.active.has-sub');
+      if (activeItem) {
+        const key = activeItem.getAttribute('data-key');
+        const activeSubmenu = document.querySelector(`.submenu[data-parent="${key}"]`);
+        if (activeSubmenu) {
+          activeSubmenu.style.display = 'flex';
+          activeSubmenu.setAttribute('aria-hidden', 'false');
+          activeItem.setAttribute('aria-expanded', 'true');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

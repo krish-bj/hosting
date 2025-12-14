@@ -1,0 +1,1021 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ABC MATH Academy — Chat</title>
+
+  <!-- Bootstrap 5 (for utilities only) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+  <!-- Tailwind CDN for utility classes (optional) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Inter font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* -------------------------
+       Design Tokens (CSS vars)
+       ------------------------- */
+    :root{
+      --primary-600: #1E6FF8;
+      --primary-700: #0A5BD6;
+      --accent-blue: #0288d1;
+      --text-900: #0f1724;
+      --muted-600: #6b7280;
+      --surface-100: #ffffff;
+      --surface-200: #EAF6FF; /* light tint (kept for cards) */
+      --bg-100: #f6fbff;
+      --border-200: #E6EEF8;
+      --danger: #ef4444;
+
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --radius: 12px;
+
+      --shadow-1: 0 6px 18px rgba(2,24,45,0.06);
+      --shadow-2: 0 10px 30px rgba(2,24,45,0.08);
+
+      --bp-sm: 768px;
+      --bp-md: 1200px;
+    }
+
+    /* -------------------------
+       Base / accessibility
+       ------------------------- */
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:var(--bg-100);
+      color:var(--text-900);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    a{ color: inherit; text-decoration: none; }
+    .muted{ color:var(--muted-600); }
+
+    /* Focus-visible (keyboard) */
+    :focus-visible {
+      outline: 3px solid rgba(30,111,248,0.18);
+      outline-offset: 2px;
+      border-radius: 8px;
+    }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      left: -999px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+    .skip-link:focus {
+      left: 16px;
+      top: 12px;
+      width: auto;
+      height: auto;
+      padding: 8px 12px;
+      background: #062b4f;
+      color: #fff;
+      border-radius: 6px;
+      z-index: 9999;
+    }
+
+    /* -------------------------
+       New Header Layout
+       ------------------------- */
+    .app-header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 80px;
+      background: var(--surface-100);
+      border-bottom: 1px solid var(--border-200);
+      z-index: 1050;
+    }
+    .header-inner {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding: 0 var(--space-6);
+    }
+    .header-left { display: flex; align-items: center; gap: var(--space-4); min-width:0; }
+    .logo-icon {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, #29b6f6, #0288d1);
+      border-radius: 10px;
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+    .greeting-wrap h1 { font-size: 22px; font-weight: 800; margin: 0; white-space: nowrap; overflow:hidden; text-overflow:ellipsis; max-width:320px; }
+    .greeting-sub { display: flex; align-items: center; gap: var(--space-3); font-size: 14px; }
+    .learn-link { background: none; border: none; padding: 0; color: var(--primary-600); font-weight: 700; cursor: pointer; }
+
+    .header-actions { display: flex; align-items: center; gap: var(--space-2); }
+    .search-box { position: relative; width: 320px; }
+    .search-input { width: 100%; height: 44px; padding-left: 40px; border-radius: 10px; border: 1px solid var(--border-200); background: #f8fafc; }
+    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted-600); }
+
+    .icon-btn {
+      width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center;
+      background: transparent; border: none; cursor: pointer;
+    }
+    .icon-btn:hover { background: rgba(0,0,0,0.04); }
+
+    .profile-area { position: relative; display: flex; align-items: center; }
+    .progress-container { width: 52px; height: 52px; position: absolute; left: -12px; top: 50%; transform: translateY(-50%); }
+    .profile-pill-wrap { position: relative; z-index: 1; }
+    .profile-pill {
+      display: flex; align-items: center; gap: var(--space-2);
+      background: var(--surface-100);
+      border: 1px solid var(--border-200);
+      border-radius: 30px;
+      padding: 6px 12px 6px 48px; /* Left padding kept for progress ring overlap */
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+    .profile-pill:hover { border-color: #bfdbfe; }
+    .profile-name { font-weight: 700; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .caret { transition: transform .2s; }
+    .profile-pill-wrap[aria-expanded="true"] .caret { transform: rotate(180deg); }
+    .profile-notif-dot { position: absolute; top: 6px; right: 8px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; border: 1.5px solid white; }
+
+    .profile-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 220px;
+      background: var(--surface-100);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-2);
+      border: 1px solid var(--border-200);
+      z-index: 1100;
+      padding: var(--space-2);
+    }
+    .profile-dropdown.show { display: block; }
+    .profile-dropdown .dropdown-item { padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+    .profile-dropdown .dropdown-item:hover { background: rgba(0,0,0,0.04); }
+    .profile-dropdown .logout { color: var(--danger); }
+
+    .app-wrapper {
+      padding-top: calc(80px + var(--space-6)); /* Adjust for header */
+      display:flex;
+      gap:20px;
+      justify-content:center;
+      padding-left:16px;
+      padding-right:16px;
+    }
+    .container-main{ max-width:1400px; width:100%; display:flex; gap:20px; align-items:flex-start; }
+
+    /* -------------------------
+       Sidebar
+       ------------------------- */
+    .sidebar{
+      width:260px; background:var(--surface-100); border-radius:12px;
+      padding:16px; box-shadow: var(--shadow-1);
+      height: calc(100vh - 80px - (2 * var(--space-6))); /* Adjust for header */
+      position: sticky;
+      top: calc(80px + var(--space-6)); /* Adjust for header */
+      overflow: hidden;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .sidebar .menu { flex:1; overflow:auto; padding-right:4px; }
+    .sidebar .menu::-webkit-scrollbar{ width:8px; }
+    .sidebar .menu::-webkit-scrollbar-thumb{ background: rgba(2,24,45,0.06); border-radius:8px; }
+
+    .help-bottom { margin-top: 12px; }
+
+    .menu-item {
+      display:flex; gap:12px; align-items:center; padding:10px; border-radius:10px; color:var(--muted-600); font-weight:700; cursor:pointer;
+      user-select:none;
+    }
+    .menu-item:hover { background: rgba(2,136,209,0.04); color:var(--primary-600); }
+    .menu-item.active { background: linear-gradient(90deg, rgba(14,165,233,0.06), transparent); color:var(--primary-600); box-shadow: inset 3px 0 0 var(--primary-600); }
+    .submenu { padding-left:36px; display:none; flex-direction:column; gap:8px; margin-top:6px; }
+    .submenu a { padding:8px 10px; border-radius:8px; color:var(--muted-600); font-weight:700; }
+
+    /* -------------------------
+       Content area & cards
+       ------------------------- */
+    .content{ flex:1; min-width:0; }
+
+    /* Chat Specific Styles */
+    .chat-container {
+      background: var(--surface-100);
+      border-radius: 14px;
+      box-shadow: var(--shadow-1);
+      height: calc(100vh - 80px - (2 * var(--space-6)) - 48px);
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Chat Sidebar */
+    .chat-sidebar {
+      width: 350px;
+      border-right: 1px solid var(--border-200);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-200);
+    }
+
+    .chat-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-900);
+      margin: 0 0 8px 0;
+    }
+
+    .chat-subtitle {
+      color: var(--muted-600);
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .chat-search {
+      position: relative;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-200);
+    }
+
+    .chat-search-input {
+      width: 100%;
+      height: 44px;
+      padding-left: 40px;
+      border-radius: 10px;
+      border: 1px solid var(--border-200);
+      background: #f8fafc;
+    }
+
+    .chat-search-icon {
+      position: absolute;
+      left: 32px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted-600);
+    }
+
+    .waiting-banner {
+      background: #fff8e1;
+      border-left: 4px solid #ffc107;
+      padding: 12px 16px;
+      margin: 0 20px 16px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .chat-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 20px;
+    }
+
+    .chat-list-section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-900);
+      margin-bottom: 16px;
+      padding-top: 16px;
+    }
+
+    .chat-item {
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 8px;
+      border: 1px solid transparent;
+    }
+
+    .chat-item:hover {
+      background: rgba(2,136,209,0.04);
+    }
+
+    .chat-item.active {
+      background: rgba(2,136,209,0.08);
+      border-color: var(--primary-600);
+    }
+
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .chat-sender {
+      font-weight: 700;
+      color: var(--text-900);
+      font-size: 14px;
+    }
+
+    .chat-time {
+      font-size: 12px;
+      color: var(--muted-600);
+    }
+
+    .chat-preview {
+      font-size: 13px;
+      color: var(--muted-600);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .ai-leads-section {
+      padding: 0 20px;
+      margin-bottom: 20px;
+    }
+
+    .ai-lead-card {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .ai-lead-title {
+      font-weight: 700;
+      color: var(--text-900);
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    /* Chat Main Area */
+    .chat-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-main-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border-200);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #29b6f6, #0288d1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+    }
+
+    .chat-user-info {
+      flex: 1;
+    }
+
+    .chat-user-name {
+      font-weight: 700;
+      color: var(--text-900);
+      margin: 0;
+    }
+
+    .chat-user-status {
+      font-size: 12px;
+      color: var(--muted-600);
+      margin: 0;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .message {
+      max-width: 70%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      position: relative;
+    }
+
+    .message.received {
+      background: #f1f5f9;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .message.sent {
+      background: var(--primary-600);
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message-content {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .message-time {
+      font-size: 11px;
+      opacity: 0.7;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .message-input-container {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-200);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .message-input {
+      flex: 1;
+      height: 44px;
+      padding: 12px 16px;
+      border-radius: 22px;
+      border: 1px solid var(--border-200);
+      background: #f8fafc;
+    }
+
+    .message-input::placeholder {
+      color: var(--muted-600);
+    }
+
+    .send-button {
+      background: var(--primary-600);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* Buttons */
+    .btn {
+      border-radius: 10px;
+      padding: 10px 14px;
+      min-height:44px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      font-weight:700;
+      cursor:pointer;
+      border: 0;
+    }
+    .btn-primary { background: var(--primary-600); color: white; }
+    .btn-primary:hover { background: var(--primary-700); }
+    .btn-outline { background: transparent; color: var(--primary-600); border: 2px solid var(--primary-600); }
+    .btn-ghost { background: transparent; color: var(--text-900); border: 1px solid var(--border-200); }
+
+    /* responsive sidebar collapse helper (kept simple) */
+    @media (max-width: 992px) {
+      .search-box, .greeting-wrap { display: none; }
+    }
+    @media (max-width: 768px) {
+      .sidebar { display:none; position:fixed; left:0; top:80px; z-index:1200; height:calc(100vh - 80px); }
+      .profile-name { display: none; }
+      .profile-pill { padding-left: 40px; }
+      .progress-container { left: -8px; }
+      #hamburger { display: grid; }
+      .header-inner { padding-left:12px; padding-right:12px; }
+      .app-wrapper { padding-left:8px; padding-right:8px; }
+      .greeting-wrap h1 { max-width: 160px; font-size:18px; }
+      .chat-sidebar {
+        width: 100%;
+        display: none;
+      }
+      .chat-sidebar.active {
+        display: flex;
+      }
+      .chat-main {
+        display: none;
+      }
+      .chat-main.active {
+        display: flex;
+      }
+    }
+    @media (min-width: 769px) {
+      #hamburger { display: none; }
+    }
+
+    /* minor accessibility focus for menu items */
+    .menu-item:focus { outline: none; box-shadow: 0 0 0 3px rgba(30,111,248,0.12); }
+  </style>
+</head>
+<body>
+  <a href="#maincontent" class="skip-link">Skip to main content</a>
+
+  <!-- HEADER -->
+  <header class="app-header" role="banner" aria-label="Main header">
+    <div class="header-inner">
+      <div class="header-left" style="min-width:0">
+        <!-- Hamburger for mobile -->
+        <button id="hamburger" class="icon-btn" aria-label="Open navigation menu" aria-expanded="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="logo-icon" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3L12 17" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6 11L12 17L18 11" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <div class="greeting-wrap" role="region" aria-label="Greeting">
+          <h1 id="mainGreeting">Hi ABC MATH ACADEMY,</h1>
+          <div class="greeting-sub">
+            <span class="muted">Welcome to your Dashboard</span>
+            <!-- Learn button removed as requested -->
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions" role="navigation" aria-label="Header actions">
+        <div class="search-box" role="search" aria-label="Global search">
+          <span class="search-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35" stroke="#0288d1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <input id="desktopSearch" class="search-input" type="search" placeholder="Search students, courses, assignments..." aria-label="Search" autocomplete="off" />
+        </div>
+
+        <button id="fullscreenBtn" class="icon-btn" aria-label="Toggle fullscreen" title="Toggle fullscreen">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 9V3h6" stroke="#0B2545" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 15v6h-6" stroke="#0B2545" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 9V3h-6" stroke="#0B2545" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 15v6h6" stroke="#0B2545" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <button id="alertsBtn" class="icon-btn" aria-label="Alerts" aria-haspopup="true" aria-expanded="false" title="Alerts">
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2z" fill="#0288d1"/>
+            <path d="M18 16v-5a6 6 0 1 0-12 0v5l-2 2v1h16v-1l-2-2z" fill="#fff"/>
+            <path d="M18 16v-5a6 6 0 1 0-12 0v5" stroke="#0288d1" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <div class="profile-area">
+          <div class="progress-container" aria-hidden="true" title="Dashboard completion">
+            <svg viewBox="0 0 36 36" aria-hidden="true">
+              <path d="M18 2.0845a15.9155 15.9155 0 1 1 0 31.831" stroke="#e6f0fa" stroke-width="4" fill="none"></path>
+              <path id="progressArc" d="M18 2.0845a15.9155 15.9155 0 1 1 0 31.831" stroke="#0288d1" stroke-width="4" stroke-linecap="round" fill="none" stroke-dasharray="46 100"></path>
+            </svg>
+          </div>
+
+          <div class="profile-pill-wrap" id="profileWrap" aria-haspopup="true" aria-expanded="false">
+            <button id="profilePill" class="profile-pill" aria-label="Account menu" aria-controls="profileDropdown" aria-expanded="false">
+              <!-- AMA badge removed as requested -->
+              <div class="profile-name" id="profileLabel" title="ABC MATH ACADEMY">ABC MATH ACADEMY</div>
+              <svg class="caret" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" stroke="#6b7280" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            </button>
+            <span id="profileNotifDot" class="profile-notif-dot" aria-hidden="true" style="display:block"></span>
+          </div>
+
+          <div id="profileDropdown" class="profile-dropdown" role="menu" aria-hidden="true" aria-label="Profile menu">
+            <div tabindex="0" class="dropdown-item" id="mi-myprofile" role="menuitem">My Profile</div>
+            <div tabindex="0" class="dropdown-item" id="mi-recharge" role="menuitem">Recharge</div>
+            <div tabindex="0" class="dropdown-item" id="mi-settings" role="menuitem">Settings</div>
+            <div tabindex="0" class="dropdown-item" id="mi-help" role="menuitem">Help and Support</div>
+            <div style="height:1px;background:var(--border-200);margin:8px 0;"></div>
+            <div tabindex="0" class="dropdown-item logout" id="mi-logout" role="menuitem">Logout</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN / CONTENT -->
+  <main id="maincontent" class="app-wrapper" role="main" aria-label="Chat">
+    <div class="container-main">
+
+      <!-- Sidebar -->
+      <aside id="sidebar" class="sidebar" aria-label="Main navigation">
+        <nav aria-label="Sidebar menu" style="display:flex;flex-direction:column;height:100%;">
+          <div class="menu" role="menu" aria-label="Primary">
+            <div class="mb-3" style="padding:6px 0 12px 0;">
+              <!-- top space kept for visual balance (Help button moved to bottom) -->
+            </div>
+
+            <div class="menu-item" data-key="dashboard" tabindex="0" role="menuitem">
+              <svg width="18" height="18" viewBox="0 0 24 24" style="flex-shrink:0"><path d="M3 13h8V3H3v10zM13 21h8V11h-8v10zM13 3v6h8V3h-8zM3 21h8v-8H3v8z" fill="#06a6db"/></svg>
+              <span>Dashboard</span>
+            </div>
+
+            <div class="menu-item has-sub" data-key="courses" tabindex="0" role="button" aria-expanded="false">
+              <svg width="18" height="18" viewBox="0 0 24 24" style="flex-shrink:0"><path d="M4 6h16v2H4zM4 10h10v2H4zM4 14h16v2H4z" fill="#8fbde0"/></svg>
+              <span>Courses</span>
+            </div>
+            <div class="submenu" data-parent="courses" aria-hidden="true">
+              <a href="course.html" class="d-block">My Courses</a>
+              <a href="#" class="d-block">Global Courses</a>
+              <a href="#" class="d-block">Manage Coupons</a>
+            </div>
+
+            <div class="menu-item has-sub" data-key="batches" tabindex="0" role="button" aria-expanded="false">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M3 7h18v13H3zM7 2h10v3H7z" fill="#a0d6ff"/></svg>
+              <span>Batches</span>
+            </div>
+            <div class="submenu" data-parent="batches" aria-hidden="true">
+              <a href="#" class="d-block">Manage Batch</a>
+              <a href="manage-fees.html" class="d-block">Manage Fees</a>
+            </div>
+
+            <div class="menu-item has-sub" data-key="content" tabindex="0" role="button" aria-expanded="false">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M4 4h16v16H4z" fill="#cfeefd"/></svg>
+              <span>Content</span>
+            </div>
+            <div class="submenu" data-parent="content" aria-hidden="true">
+              <a href="test-portal.html" class="d-block">Test Portal</a>
+              <a href="#" class="d-block">Free Material</a>
+            </div>
+
+            <div class="menu-item active" data-key="chat" tabindex="0" role="menuitem" aria-current="page">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M2 12h20v6H7l-5 5V12z" fill="#bfe7ff"/></svg>
+              <span>Chat</span>
+            </div>
+
+            <div class="menu-item" data-key="analytics" tabindex="0">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M4 21h4V10H4v11zM10 21h4V3h-4v18zM16 21h4v-8h-4v8z" fill="#9dd2f7"/></svg>
+              <span>Analytics</span>
+            </div>
+
+            <div class="menu-item" data-key="people" tabindex="0">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zM4 20a8 8 0 0116 0H4z" fill="#caeefe"/></svg>
+              <span>People</span>
+            </div>
+          </div>
+
+          <!-- Help & Support moved to bottom of sidebar -->
+          <div style="padding-top:12px;">
+            <button id="helpBtn" class="btn btn-primary w-100 help-bottom" style="border-radius:10px; font-weight:700;">Help & Support</button>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- Main content area (chat) -->
+      <section class="content" aria-label="Chat">
+        <div class="chat-container">
+          <!-- Chat Sidebar -->
+          <div class="chat-sidebar active" id="chatSidebar">
+            <div class="chat-sidebar-header">
+              <h1 class="chat-title">Chat</h1>
+              <p class="chat-subtitle">Send messages to your students on a daily basis</p>
+            </div>
+
+            <div class="chat-search">
+              <span class="chat-search-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35" stroke="#0288d1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <input class="chat-search-input" type="text" placeholder="Search by name or number" aria-label="Search chats">
+            </div>
+
+            <div class="waiting-banner">
+              STUDENTS ARE WAITING FOR YOU
+            </div>
+
+            <div class="chat-list">
+              <div class="chat-list-section">
+                <h3 class="section-title">MESSAGES</h3>
+                
+                <!-- Chat Item 1 -->
+                <div class="chat-item active" data-chat="ai-powered-leads">
+                  <div class="chat-header">
+                    <div class="chat-sender">AI Powered Leads</div>
+                    <div class="chat-time">2025/11/08</div>
+                  </div>
+                  <div class="chat-preview">[Normal Lead]: Your student UG25...</div>
+                </div>
+                
+                <!-- Chat Item 2 -->
+                <div class="chat-item" data-chat="ai-powered-leads-pro">
+                  <div class="chat-header">
+                    <div class="chat-sender">AI Powered Leads - PRO</div>
+                    <div class="chat-time">2025/09/22</div>
+                  </div>
+                  <div class="chat-preview">[Warm Lead]: Your student ...</div>
+                </div>
+                
+                <!-- Chat Item 3 -->
+                <div class="chat-item" data-chat="balaji">
+                  <div class="chat-header">
+                    <div class="chat-sender">AP25027 BALAJI Kumbakonam</div>
+                    <div class="chat-time">03:57 pm</div>
+                  </div>
+                  <div class="chat-preview">You : Dear AP25027 BALAJI Kumbakonam, we welcome...</div>
+                </div>
+                
+                <!-- Chat Item 4 -->
+                <div class="chat-item" data-chat="asst-prof">
+                  <div class="chat-header">
+                    <div class="chat-sender">Asst Prof 2025</div>
+                    <div class="chat-time">YESTERDAY</div>
+                  </div>
+                  <div class="chat-preview">You : ABC MATH ACADEMY added Algebra-Field in the ...</div>
+                </div>
+              </div>
+
+              <div class="ai-leads-section">
+                <!-- AI Lead 1 -->
+                <div class="ai-lead-card">
+                  <div class="ai-lead-title">AI Powered Leads</div>
+                  <div class="ai-lead-content">
+                    (+919080206460) showed interest in the course "Revision Test-1" but didn't buy. Please follow up with him/her.
+                  </div>
+                </div>
+                
+                <!-- AI Lead 2 -->
+                <div class="ai-lead-card">
+                  <div class="ai-lead-title">AI Powered Leads</div>
+                  <div class="ai-lead-content">
+                    [Normal Lead]: Your student AMMATCHI T (+919361666020) showed interest in the course "Revision Test-1" but didn't buy. Please follow up with him/her.
+                  </div>
+                </div>
+                
+                <!-- AI Lead 3 -->
+                <div class="ai-lead-card">
+                  <div class="ai-lead-content">
+                    [Normal Lead]: Your student DC24 Sangeetha Barur (+918012447918) showed interest in the course "Revision Test-1" but didn't buy. Please follow up with him/her.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat Main Area -->
+          <div class="chat-main active" id="chatMain">
+            <div class="chat-main-header">
+              <div class="chat-avatar">AI</div>
+              <div class="chat-user-info">
+                <h3 class="chat-user-name">AI Powered Leads</h3>
+                <p class="chat-user-status">Online</p>
+              </div>
+            </div>
+
+            <div class="chat-messages">
+              <!-- Received Message -->
+              <div class="message received">
+                <p class="message-content">[Normal Lead]: Your student UG25 showed interest in the course "Revision Test-1" but didn't buy. Please follow up with him/her.</p>
+                <div class="message-time">2025/11/08 10:30 AM</div>
+              </div>
+
+              <!-- Sent Message -->
+              <div class="message sent">
+                <p class="message-content">Thank you for the notification. I will follow up with UG25 regarding the Revision Test-1 course.</p>
+                <div class="message-time">2025/11/08 10:35 AM</div>
+              </div>
+
+              <!-- Received Message -->
+              <div class="message received">
+                <p class="message-content">Great! Please ensure you contact them within 24 hours for the best conversion rate.</p>
+                <div class="message-time">2025/11/08 10:36 AM</div>
+              </div>
+
+              <!-- Sent Message -->
+              <div class="message sent">
+                <p class="message-content">Understood. I've scheduled a follow-up call for this afternoon.</p>
+                <div class="message-time">2025/11/08 10:38 AM</div>
+              </div>
+            </div>
+
+            <div class="message-input-container">
+              <input class="message-input" type="text" placeholder="Write something here ..." aria-label="Type your message">
+              <button class="send-button">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Minimal JS: sidebar toggles, manage-card actions, accessibility helpers -->
+  <script>
+    // Simple toast helper
+    function showToast(msg) {
+      const el = document.createElement('div');
+      el.textContent = msg;
+      Object.assign(el.style, {
+        position:'fixed', right:'18px', bottom:'18px', background:'#04293a', color:'white', padding:'10px 14px',
+        borderRadius:'8px', zIndex:9999, boxShadow:'0 8px 30px rgba(2,24,45,0.2)'
+      });
+      document.body.appendChild(el);
+      setTimeout(()=> el.style.opacity = '0.02', 1600);
+      setTimeout(()=> el.remove(), 2000);
+    }
+
+    // --- App Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+
+      // --- Element Cache ---
+      const hamburger = document.getElementById('hamburger');
+      const sidebar = document.getElementById('sidebar');
+      const alertsBtn = document.getElementById('alertsBtn');
+      const profileWrap = document.getElementById('profileWrap');
+      const profileDropdown = document.getElementById('profileDropdown');
+      const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+      // --- State ---
+      let sidebarOpen = false;
+
+      // --- Event Handlers ---
+
+      // Mobile sidebar toggle
+      const toggleMobileSidebar = () => {
+        sidebarOpen = !sidebarOpen;
+        sidebar.style.display = sidebarOpen ? 'block' : 'none';
+        hamburger.setAttribute('aria-expanded', sidebarOpen.toString());
+      };
+
+      // Profile Dropdown Toggle
+      const toggleProfileDropdown = (event) => {
+        event.stopPropagation();
+        const isExpanded = profileWrap.getAttribute('aria-expanded') === 'true';
+        profileWrap.setAttribute('aria-expanded', (!isExpanded).toString());
+        profileDropdown.classList.toggle('show');
+        profileDropdown.setAttribute('aria-hidden', (isExpanded ? 'true' : 'false'));
+      };
+
+      // Fullscreen Toggle
+      const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(err => showToast(`Fullscreen Error: ${err.message}`));
+        } else {
+          document.exitFullscreen();
+        }
+      };
+      
+      // Global click to close dropdowns
+      const handleGlobalClick = (event) => {
+        if (!profileWrap.contains(event.target)) {
+          profileWrap.setAttribute('aria-expanded', 'false');
+          profileDropdown.classList.remove('show');
+          profileDropdown.setAttribute('aria-hidden', 'true');
+        }
+        // Add similar logic for alerts dropdown if it's created
+      };
+
+      // --- Event Listeners ---
+      hamburger?.addEventListener('click', toggleMobileSidebar);
+      profileWrap?.addEventListener('click', toggleProfileDropdown);
+      fullscreenBtn?.addEventListener('click', toggleFullscreen);
+      window.addEventListener('click', handleGlobalClick);
+      
+      // Placeholder for alerts
+      alertsBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showToast('Alerts panel not implemented yet.');
+      });
+
+      // Sidebar submenu toggles (accessible)
+      document.querySelectorAll('.menu-item.has-sub').forEach(btn => {
+        const clickOrKeyHandler = (e) => {
+          const key = btn.getAttribute('data-key');
+          const submenu = document.querySelector(`.submenu[data-parent="${key}"]`);
+          if (!submenu) return;
+          const isOpen = submenu.getAttribute('aria-hidden') === 'false';
+          
+          // Close all other submenus
+          document.querySelectorAll('.submenu').forEach(s => { s.setAttribute('aria-hidden','true'); s.style.display = 'none'; });
+          document.querySelectorAll('.menu-item.has-sub').forEach(mi => mi.setAttribute('aria-expanded','false'));
+          
+          if (!isOpen) {
+            submenu.setAttribute('aria-hidden','false');
+            submenu.style.display = 'flex';
+            btn.setAttribute('aria-expanded','true');
+          } else {
+            submenu.setAttribute('aria-hidden','true');
+            submenu.style.display = 'none';
+            btn.setAttribute('aria-expanded','false');
+          }
+        };
+        btn.addEventListener('click', clickOrKeyHandler);
+        btn.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            clickOrKeyHandler(e);
+          }
+        });
+      });
+
+      // Sidebar active selection for non-parent items
+      document.querySelectorAll('.menu-item:not(.has-sub)').forEach(item => {
+        item.addEventListener('click', (e) => {
+          document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          // Close any open submenus
+          document.querySelectorAll('.submenu').forEach(s => { s.setAttribute('aria-hidden','true'); s.style.display = 'none'; });
+          document.querySelectorAll('.menu-item.has-sub').forEach(mi => mi.setAttribute('aria-expanded','false'));
+        });
+      });
+
+      // Chat item selection
+      document.querySelectorAll('.chat-item').forEach(item => {
+        item.addEventListener('click', function() {
+          document.querySelectorAll('.chat-item').forEach(ci => ci.classList.remove('active'));
+          this.classList.add('active');
+          
+          const chatId = this.getAttribute('data-chat');
+          const chatName = this.querySelector('.chat-sender').textContent;
+          
+          // Update chat main header
+          document.querySelector('.chat-user-name').textContent = chatName;
+          document.querySelector('.chat-avatar').textContent = chatName.substring(0, 2);
+          
+          showToast(`Opening chat with ${chatName}`);
+        });
+      });
+
+      // Send message functionality
+      document.querySelector('.send-button')?.addEventListener('click', (e) => {
+        const input = document.querySelector('.message-input');
+        if (input.value.trim()) {
+          const messagesContainer = document.querySelector('.chat-messages');
+          const newMessage = document.createElement('div');
+          newMessage.className = 'message sent';
+          newMessage.innerHTML = `
+            <p class="message-content">${input.value}</p>
+            <div class="message-time">Just now</div>
+          `;
+          messagesContainer.appendChild(newMessage);
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          input.value = '';
+          
+          // Simulate reply after 1 second
+          setTimeout(() => {
+            const replyMessage = document.createElement('div');
+            replyMessage.className = 'message received';
+            replyMessage.innerHTML = `
+              <p class="message-content">Thank you for your message. We'll get back to you shortly.</p>
+              <div class="message-time">Just now</div>
+            `;
+            messagesContainer.appendChild(replyMessage);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          }, 1000);
+        } else {
+          showToast('Please type a message first');
+        }
+      });
+
+      // Send message on Enter key
+      document.querySelector('.message-input')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          document.querySelector('.send-button').click();
+        }
+      });
+
+      // Help button at bottom
+      const helpBtn = document.getElementById('helpBtn');
+      helpBtn?.addEventListener('click', (e) => {
+        showToast('Help & Support panel is not yet implemented.');
+      });
+
+      // --- Initial State Setup ---
+      const activeItem = document.querySelector('.menu-item.active.has-sub');
+      if (activeItem) {
+        const key = activeItem.getAttribute('data-key');
+        const activeSubmenu = document.querySelector(`.submenu[data-parent="${key}"]`);
+        if (activeSubmenu) {
+          activeSubmenu.style.display = 'flex';
+          activeSubmenu.setAttribute('aria-hidden', 'false');
+          activeItem.setAttribute('aria-expanded', 'true');
+        }
+      }
+    });
+  </script>
+</body>
+</html>
